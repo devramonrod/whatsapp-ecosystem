@@ -1,0 +1,48 @@
+plugins {
+    id 'java'
+    id 'io.quarkus' version '3.8.2' apply false
+}
+
+allprojects {
+    group = 'com.whatsapp.ai'
+    version = '1.0.0-SNAPSHOT'
+
+    repositories {
+        mavenCentral()
+    }
+}
+
+subprojects {
+    apply plugin: 'java'
+    apply plugin: 'io.quarkus'
+
+    sourceCompatibility = JavaVersion.VERSION_21
+    targetCompatibility = JavaVersion.VERSION_21
+
+    dependencies {
+        implementation enforcedPlatform("io.quarkus.platform:quarkus-bom:3.8.2")
+        // Apply BOM to all dependency configurations
+        compileOnly enforcedPlatform("io.quarkus.platform:quarkus-bom:3.8.2")
+        annotationProcessor enforcedPlatform("io.quarkus.platform:quarkus-bom:3.8.2")
+        testImplementation enforcedPlatform("io.quarkus.platform:quarkus-bom:3.8.2")
+        implementation 'io.quarkus:quarkus-arc'
+        implementation 'io.quarkus:quarkus-resteasy-reactive'
+        implementation 'io.quarkus:quarkus-resteasy-reactive-jackson'
+        implementation 'io.quarkus:quarkus-rest-client-reactive'
+        implementation 'io.quarkus:quarkus-rest-client-reactive-jackson'
+        implementation 'io.quarkus:quarkus-config-yaml'
+        
+        testImplementation 'io.quarkus:quarkus-junit5'
+        testImplementation 'io.rest-assured:rest-assured'
+    }
+
+    compileJava {
+        options.encoding = 'UTF-8'
+        options.compilerArgs << '-parameters'
+    }
+
+    compileTestJava {
+        options.encoding = 'UTF-8'
+    }
+}
+

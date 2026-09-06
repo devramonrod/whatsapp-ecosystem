@@ -1,0 +1,5 @@
+rootProject.name = 'whatsapp-ai-ecosystem'
+include 'whatsapp-gateway'
+include 'agent-core'
+include 'config-manager'
+

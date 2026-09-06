@@ -1,0 +1,139 @@
+version: '3.8'
+
+services:
+  postgres:
+    image: postgres:15
+    container_name: whatsapp_db
+    environment:
+      POSTGRES_USER: user
+      POSTGRES_PASSWORD: password
+      POSTGRES_DB: whatsapp_ai_db
+    ports:
+      - "5432:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    networks:
+      - whatsapp_net
+
+  kafka:
+    image: apache/kafka:3.7.0
+    container_name: whatsapp_kafka
+    environment:
+      KAFKA_NODE_ID: 1
+      KAFKA_PROCESS_ROLES: broker,controller
+      KAFKA_LISTENERS: PLAINTEXT://:9092,CONTROLLER://:9093,EXTERNAL://:29092
+      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://kafka:9092,EXTERNAL://localhost:29092
+      KAFKA_CONTROLLER_LISTENER_NAMES: CONTROLLER
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: CONTROLLER:PLAINTEXT,PLAINTEXT:PLAINTEXT,EXTERNAL:PLAINTEXT
+      KAFKA_CONTROLLER_QUORUM_VOTERS: 1@kafka:9093
+      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
+      KAFKA_TRANSACTION_STATE_LOG_REPLICATION_FACTOR: 1
+      KAFKA_TRANSACTION_STATE_LOG_MIN_ISR: 1
+      KAFKA_GROUP_INITIAL_REBALANCE_DELAY_MS: 0
+      KAFKA_NUM_PARTITIONS: 1
+    ports:
+      - "29092:29092"
+    volumes:
+      - kafkadata:/bitnami/kafka
+    networks:
+      - whatsapp_net
+
+  redis:
+    image: redis:7-alpine
+    container_name: whatsapp_redis
+    ports:
+      - "6379:6379"
+    networks:
+      - whatsapp_net
+
+  evolution-api:
+    image: evoapicloud/evolution-api:latest
+    container_name: evolution_api
+    restart: always
+    environment:
+      - SERVER_URL=http://localhost:8080
+      - DOCKER_ENV=true
+      - LOG_LEVEL=ERROR,WARN,DEBUG,INFO,LOG,VERBOSE,DARK,WEBHOOKS
+      - AUTHENTICATION_TYPE=apikey
+      - AUTHENTICATION_API_KEY=B6D711FCDE4D4FD5936544120E713976
+      - WEBHOOK_GLOBAL_ENABLED=false
+      - DATABASE_PROVIDER=postgresql
+      - DATABASE_CONNECTION_URI=postgresql://user:password@postgres:5432/postgres?schema=public
+      - CACHE_REDIS_ENABLED=true
+      - CACHE_REDIS_URI=redis://redis:6379/0
+      - CACHE_LOCAL_ENABLED=false
+    ports:
+      - "8080:8080"
+    volumes:
+      - evolution_instances:/evolution/instances
+    depends_on:
+      - postgres
+      - redis
+    networks:
+      - whatsapp_net
+
+  config-manager:
+    build: 
+      context: .
+      dockerfile: config-manager/Dockerfile
+    container_name: config_manager
+    environment:
+      - QUARKUS_DATASOURCE_JDBC_URL=jdbc:postgresql://postgres:5432/whatsapp_ai_db
+      - KAFKA_BOOTSTRAP_SERVERS=kafka:9092
+    ports:
+      - "8082:8082"
+    depends_on:
+      - postgres
+    networks:
+      - whatsapp_net
+
+  agent-core:
+    build: 
+      context: .
+      dockerfile: agent-core/Dockerfile
+    container_name: agent_core
+    environment:
+      - QUARKUS_REST_CLIENT_CONFIG_MANAGER_API_URL=http://config-manager:8082
+      - KAFKA_BOOTSTRAP_SERVERS=kafka:9092
+    ports:
+      - "8083:8083"
+    depends_on:
+      - kafka
+      - config-manager
+    networks:
+      - whatsapp_net
+
+  whatsapp-gateway:
+    build: 
+      context: .
+      dockerfile: whatsapp-gateway/Dockerfile
+    container_name: whatsapp_gateway
+    environment:
+      - KAFKA_BOOTSTRAP_SERVERS=kafka:9092
+      - QUARKUS_REST_CLIENT_EVOLUTION_API_URL=http://evolution-api:8080
+    ports:
+      - "8081:8081"
+    depends_on:
+      - kafka
+      - evolution-api
+    networks:
+      - whatsapp_net
+
+  whatsapp-dashboard:
+    build:
+      context: ./whatsapp-dashboard
+      dockerfile: Dockerfile
+    container_name: whatsapp_dashboard
+    ports:
+      - "3000:3000"
+    networks:
+      - whatsapp_net
+
+networks:
+  whatsapp_net:
+    driver: bridge
+
+volumes:
+  pgdata:
+  kafkadata:
+  evolution_instances:

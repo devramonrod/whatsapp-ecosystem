@@ -1,0 +1,1 @@
+{"webhook":{"enabled":true,"url":"http://whatsapp-gateway:8081/webhook/evolution","byEvents":false,"base64":false,"events":["MESSAGES_UPSERT"]}}

@@ -1,0 +1,26 @@
+quarkus:
+  http:
+    port: 8081
+  rest-client:
+    evolution-api:
+      url: "http://localhost:8080"
+mp:
+  messaging:
+    outgoing:
+      whatsapp-message-received:
+        connector: smallrye-kafka
+        topic: whatsapp.message.received
+        value:
+          serializer: org.apache.kafka.common.serialization.StringSerializer
+    incoming:
+      whatsapp-message-send:
+        connector: smallrye-kafka
+        topic: whatsapp.message.send
+        value:
+          deserializer: org.apache.kafka.common.serialization.StringDeserializer
+evolution:
+  api:
+    key: "B6D711FCDE4D4FD5936544120E713976"
+  instance:
+    name: "my-instance"
+

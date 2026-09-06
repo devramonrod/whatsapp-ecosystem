@@ -1,0 +1,24 @@
+quarkus:
+  http:
+    port: 8083
+  langchain4j:
+    openai:
+      api-key: "${OPENAI_API_KEY:sk-fake}"
+  rest-client:
+    config-manager-api:
+      url: "http://localhost:8082"
+mp:
+  messaging:
+    incoming:
+      whatsapp-message-received:
+        connector: smallrye-kafka
+        topic: whatsapp.message.received
+        value:
+          deserializer: io.quarkus.kafka.client.serialization.ObjectMapperDeserializer
+    outgoing:
+      whatsapp-message-send:
+        connector: smallrye-kafka
+        topic: whatsapp.message.send
+        value:
+          serializer: io.quarkus.kafka.client.serialization.ObjectMapperSerializer
+
