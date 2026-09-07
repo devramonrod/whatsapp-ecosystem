@@ -1,9 +1,10 @@
 package com.whatsapp.ai.agent.application;
 
 import com.whatsapp.ai.agent.domain.AiAgentService;
-
 import com.whatsapp.ai.agent.infrastructure.messaging.AgentMessageProducer;
 import com.whatsapp.ai.agent.infrastructure.rest.ConfigManagerClient;
+import com.whatsapp.ai.agent.infrastructure.rest.OpenAiAudioTranscriptionClient;
+import com.whatsapp.ai.agent.infrastructure.rest.EvolutionMediaClient;
 import dev.langchain4j.model.chat.ChatLanguageModel;
 import dev.langchain4j.model.openai.OpenAiChatModel;
 import dev.langchain4j.service.AiServices;
@@ -36,6 +37,7 @@ public class AgentMessageConsumer {
             public Message message;
             public Key key;
             public String pushName;
+            public String base64;
         }
         @com.fasterxml.jackson.annotation.JsonIgnoreProperties(ignoreUnknown = true)
         public static class Message {
@@ -44,6 +46,7 @@ public class AgentMessageConsumer {
             public Object imageMessage;
             public Object audioMessage;
             public Object documentMessage;
+            public String base64;
         }
         @com.fasterxml.jackson.annotation.JsonIgnoreProperties(ignoreUnknown = true)
         public static class ExtendedTextMessage {
@@ -51,6 +54,7 @@ public class AgentMessageConsumer {
         }
         @com.fasterxml.jackson.annotation.JsonIgnoreProperties(ignoreUnknown = true)
         public static class Key {
+            public String id;
             public String remoteJid;
             public Boolean fromMe;
         }
@@ -84,7 +88,50 @@ public class AgentMessageConsumer {
                     } else if (payload.data.message.extendedTextMessage != null && payload.data.message.extendedTextMessage.text != null) {
                         text = payload.data.message.extendedTextMessage.text;
                     } else if (payload.data.message.audioMessage != null) {
-                        text = "[O usuário enviou uma mensagem de áudio. Como você ainda não tem ouvidos (Transcrição Whisper), avise o usuário que você só consegue ler textos no momento]";
+                        try {
+                            String base64 = null;
+                            String mimetype = "audio/ogg";
+
+                            if (payload.data.message.audioMessage instanceof java.util.Map) {
+                                @SuppressWarnings("unchecked")
+                                java.util.Map<String, Object> audioMap = (java.util.Map<String, Object>) payload.data.message.audioMessage;
+                                if (audioMap.containsKey("base64")) {
+                                    base64 = (String) audioMap.get("base64");
+                                }
+                                if (audioMap.containsKey("mimetype")) {
+                                    mimetype = (String) audioMap.get("mimetype");
+                                }
+                            }
+
+                            if (base64 == null && payload.data.base64 != null) {
+                                base64 = payload.data.base64;
+                            }
+                            if (base64 == null && payload.data.message.base64 != null) {
+                                base64 = payload.data.message.base64;
+                            }
+
+                            // Fallback: fetch from Evolution API if not in webhook payload
+                            if (base64 == null && payload.data.key != null && payload.data.key.id != null) {
+                                System.out.println("Fetching audio base64 on-demand from Evolution for message ID: " + payload.data.key.id);
+                                base64 = EvolutionMediaClient.getBase64Media(payload.instance, payload.data.key.id, payload.data.message.audioMessage);
+                            }
+
+                            if (base64 != null && !base64.trim().isEmpty()) {
+                                var config = configManagerClient.getByPhoneNumber(payload.instance);
+                                String encryptedApiKey = config != null && config.aiApiKey != null ? config.aiApiKey : "";
+                                String apiKey = EncryptionUtil.decrypt(encryptedApiKey);
+                                
+                                text = OpenAiAudioTranscriptionClient.transcribe(apiKey, base64, mimetype);
+                                System.out.println("Audio transcribed successfully: " + text);
+                            } else {
+                                System.err.println("Could not obtain base64 for audio message: " + (payload.data.key != null ? payload.data.key.id : "null"));
+                                text = "[Áudio Recebido sem Base64]";
+                            }
+                        } catch (Exception e) {
+                            System.err.println("Failed to transcribe audio: " + e.getMessage());
+                            e.printStackTrace();
+                            text = "[Falha ao transcrever o áudio]";
+                        }
                     } else if (payload.data.message.imageMessage != null) {
                         text = "[O usuário enviou uma imagem/foto. Você não consegue ver a imagem, então apenas avise que recebeu]";
                     } else if (payload.data.message.documentMessage != null) {
@@ -97,15 +144,25 @@ public class AgentMessageConsumer {
                     return;
                 }
 
-                
+                // Check if AI is active for this user
+                try {
+                    var leadStatus = configManagerClient.getLeadStatus(payload.instance, remoteJid);
+                    if (leadStatus != null && Boolean.FALSE.equals(leadStatus.aiActive)) {
+                        System.out.println("AI paused for lead: " + remoteJid);
+                        return; // Ignore
+                    }
+                } catch (Exception e) {
+                    System.err.println("Failed to check lead status: " + e.getMessage());
+                }
+
                 var config = configManagerClient.getByPhoneNumber(payload.instance);
                 String systemPrompt = config != null ? config.systemPrompt : "Você é um assistente útil.";
                 String provider = config != null && config.aiProvider != null ? config.aiProvider : "OPENAI";
-                String apiKey = config != null && config.aiApiKey != null ? config.aiApiKey : "demo";
+                String encryptedApiKey = config != null && config.aiApiKey != null ? config.aiApiKey : "demo";
+                String apiKey = EncryptionUtil.decrypt(encryptedApiKey);
 
                 ChatLanguageModel model;
                 if ("GEMINI".equalsIgnoreCase(provider)) {
-                    // Placeholder for Gemini - using OpenAI temporarily to unblock build
                     System.out.println("WARN: Gemini not yet fully linked. Defaulting to OpenAI for now.");
                 }
                 

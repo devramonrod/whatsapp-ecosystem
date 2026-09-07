@@ -10,13 +10,8 @@ public class EvolutionWebhookPayload {
 
     @JsonIgnoreProperties(ignoreUnknown = true)
     public static class Data {
-        public Message message;
+        public Object message;
         public Key key;
-    }
-
-    @JsonIgnoreProperties(ignoreUnknown = true)
-    public static class Message {
-        public String conversation;
     }
 
     @JsonIgnoreProperties(ignoreUnknown = true)

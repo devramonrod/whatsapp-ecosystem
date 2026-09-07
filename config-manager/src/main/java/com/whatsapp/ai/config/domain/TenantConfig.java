@@ -7,13 +7,17 @@ import jakarta.persistence.Column;
 @Entity
 public class TenantConfig extends PanacheEntity {
     
+    public String userId; // SaaS multi-tenancy user ID owner
+
     public String phoneNumberId; // e.g., the Evolution instance name or phone number
     public String businessType;  // e.g., "Imobiliaria", "Advocacia"
     
-    @Column(length = 2000)
+    @Column(columnDefinition = "TEXT")
     public String systemPrompt;  // The AI personality and rules
     
     public String aiProvider; // e.g., "OPENAI" or "GEMINI"
+    
+    @Column(columnDefinition = "TEXT")
     public String aiApiKey;
     
     public static TenantConfig findByPhoneNumber(String phoneNumberId) {

@@ -22,14 +22,16 @@ public class WebhookResource {
 
     @POST
     @Path("/evolution")
-    public Response receiveEvolutionWebhook(EvolutionWebhookPayload payload) {
-        // Ignore messages sent by the bot itself
-        if (payload.data != null && payload.data.key != null && payload.data.key.fromMe) {
-            return Response.accepted(Map.of("status", "IGNORED_FROM_ME")).build();
+    public Response receiveEvolutionWebhook(com.fasterxml.jackson.databind.JsonNode payloadNode) {
+        if (payloadNode != null && payloadNode.has("data")) {
+            var dataNode = payloadNode.get("data");
+            if (dataNode.has("key") && dataNode.get("key").has("fromMe") && dataNode.get("key").get("fromMe").asBoolean(false)) {
+                return Response.accepted(Map.of("status", "IGNORED_FROM_ME")).build();
+            }
         }
         
-        // Push to Kafka
-        messageProducer.sendToKafka(payload);
+        // Push full untouched JSON to Kafka
+        messageProducer.sendRawToKafka(payloadNode != null ? payloadNode.toString() : "{}");
 
         return Response.accepted(Map.of("status", "ACCEPTED")).status(202).build();
     }

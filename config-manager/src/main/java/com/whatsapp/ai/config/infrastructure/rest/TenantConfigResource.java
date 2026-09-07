@@ -13,8 +13,9 @@ import java.util.List;
 public class TenantConfigResource {
 
     @GET
-    public List<TenantConfig> listAll() {
-        return TenantConfig.listAll();
+    public List<TenantConfig> listAll(@HeaderParam("X-User-ID") String userId) {
+        if (userId == null) return java.util.Collections.emptyList();
+        return TenantConfig.find("userId", userId).list();
     }
 
     @GET
@@ -29,7 +30,8 @@ public class TenantConfigResource {
 
     @POST
     @Transactional
-    public Response create(TenantConfig config) {
+    public Response create(@HeaderParam("X-User-ID") String userId, TenantConfig config) {
+        config.userId = userId;
         config.persist();
         return Response.status(Response.Status.CREATED).entity(config).build();
     }
@@ -37,9 +39,9 @@ public class TenantConfigResource {
     @PUT
     @Path("/{id}")
     @Transactional
-    public Response update(@PathParam("id") Long id, TenantConfig updateConfig) {
+    public Response update(@PathParam("id") Long id, @HeaderParam("X-User-ID") String userId, TenantConfig updateConfig) {
         TenantConfig existing = TenantConfig.findById(id);
-        if (existing == null) {
+        if (existing == null || (existing.userId != null && !existing.userId.equals(userId))) {
             return Response.status(Response.Status.NOT_FOUND).build();
         }
         existing.phoneNumberId = updateConfig.phoneNumberId;
@@ -53,9 +55,9 @@ public class TenantConfigResource {
     @DELETE
     @Path("/{id}")
     @Transactional
-    public Response delete(@PathParam("id") Long id) {
+    public Response delete(@PathParam("id") Long id, @HeaderParam("X-User-ID") String userId) {
         TenantConfig existing = TenantConfig.findById(id);
-        if (existing == null) {
+        if (existing == null || (existing.userId != null && !existing.userId.equals(userId))) {
             return Response.status(Response.Status.NOT_FOUND).build();
         }
         existing.delete();

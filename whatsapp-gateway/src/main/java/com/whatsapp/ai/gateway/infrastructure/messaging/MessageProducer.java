@@ -14,6 +14,12 @@ public class MessageProducer {
     @Channel("whatsapp-message-received")
     Emitter<String> emitter;
 
+    public void sendRawToKafka(String rawJson) {
+        if (rawJson != null && !rawJson.trim().isEmpty()) {
+            emitter.send(rawJson);
+        }
+    }
+
     public void sendToKafka(EvolutionWebhookPayload payload) {
         if (payload != null && payload.data != null && payload.data.message != null) {
             try {

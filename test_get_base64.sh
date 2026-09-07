@@ -1,0 +1,1 @@
+curl -X POST http://evolution-api:8080/chat/getBase64FromMediaMessage/ELOISA-TECHNOSOU -H "apikey: B6D711FCDE4D4FD5936544120E713976" -H "Content-Type: application/json" -d '{"message":{"key":{"id":"TEST"}},"convertToMp4":false}'

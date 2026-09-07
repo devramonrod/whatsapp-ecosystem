@@ -13,6 +13,10 @@ public interface ConfigManagerClient {
     @Path("/{phoneNumberId}")
     TenantConfigDTO getByPhoneNumber(@PathParam("phoneNumberId") String phoneNumberId);
 
+    @GET
+    @Path("/../leads/{instanceName}/{remoteJid}")
+    ChatLeadDTO getLeadStatus(@PathParam("instanceName") String instanceName, @PathParam("remoteJid") String remoteJid);
+
     class TenantConfigDTO {
         public Long id;
         public String phoneNumberId;
@@ -20,5 +24,11 @@ public interface ConfigManagerClient {
         public String systemPrompt;
         public String aiProvider;
         public String aiApiKey;
+    }
+
+    class ChatLeadDTO {
+        public String instanceName;
+        public String remoteJid;
+        public Boolean aiActive;
     }
 }
