@@ -61,3 +61,4 @@ public class LeadQualificationTool {
         return "Lead qualificado com sucesso. O atendimento será continuado por um humano.";
     }
 }
+
