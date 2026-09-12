@@ -17,6 +17,8 @@ public class TenantConfig extends PanacheEntity {
     
     public String aiProvider; // e.g., "OPENAI" or "GEMINI"
     
+    public String aiModel; // e.g., "gpt-4o", "gemini-1.5-pro"
+    
     @Column(columnDefinition = "TEXT")
     public String aiApiKey;
     

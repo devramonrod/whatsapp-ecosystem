@@ -23,6 +23,7 @@ public interface ConfigManagerClient {
         public String businessType;
         public String systemPrompt;
         public String aiProvider;
+        public String aiModel;
         public String aiApiKey;
     }
 

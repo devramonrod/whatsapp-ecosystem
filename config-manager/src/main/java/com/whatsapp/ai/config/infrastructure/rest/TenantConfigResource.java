@@ -48,6 +48,7 @@ public class TenantConfigResource {
         existing.businessType = updateConfig.businessType;
         existing.systemPrompt = updateConfig.systemPrompt;
         existing.aiProvider = updateConfig.aiProvider;
+        existing.aiModel = updateConfig.aiModel;
         existing.aiApiKey = updateConfig.aiApiKey;
         return Response.ok(existing).build();
     }

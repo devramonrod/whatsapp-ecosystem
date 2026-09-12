@@ -23,4 +23,9 @@ mp:
         connector: smallrye-kafka
         topic: whatsapp.message.send
         value.deserializer: org.apache.kafka.common.serialization.StringDeserializer
+    outgoing:
+      whatsapp-message-out:
+        connector: smallrye-kafka
+        topic: whatsapp.message.send
+        value.serializer: org.apache.kafka.common.serialization.StringSerializer
 

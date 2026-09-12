@@ -158,18 +158,32 @@ public class AgentMessageConsumer {
                 var config = configManagerClient.getByPhoneNumber(payload.instance);
                 String systemPrompt = config != null ? config.systemPrompt : "Você é um assistente útil.";
                 String provider = config != null && config.aiProvider != null ? config.aiProvider : "OPENAI";
+                String aiModel = config != null && config.aiModel != null ? config.aiModel : "gpt-4o";
                 String encryptedApiKey = config != null && config.aiApiKey != null ? config.aiApiKey : "demo";
                 String apiKey = EncryptionUtil.decrypt(encryptedApiKey);
 
                 ChatLanguageModel model;
-                if ("GEMINI".equalsIgnoreCase(provider)) {
-                    System.out.println("WARN: Gemini not yet fully linked. Defaulting to OpenAI for now.");
-                }
                 
-                model = OpenAiChatModel.builder()
-                        .apiKey(apiKey)
-                        .modelName("gpt-4o")
-                        .build();
+                if ("OPENROUTER".equalsIgnoreCase(provider)) {
+                    model = OpenAiChatModel.builder()
+                            .baseUrl("https://openrouter.ai/api/v1")
+                            .apiKey(apiKey)
+                            .modelName(aiModel)
+                            .build();
+                } else if ("GEMINI".equalsIgnoreCase(provider)) {
+                    // For Gemini, we might need a Gemini builder, or if using langchain4j with OpenAI compatibility:
+                    model = OpenAiChatModel.builder()
+                            .baseUrl("https://generativelanguage.googleapis.com/v1beta/openai/") // Assuming Gemini OpenAI compat
+                            .apiKey(apiKey)
+                            .modelName(aiModel)
+                            .build();
+                } else {
+                    // Default to OpenAI
+                    model = OpenAiChatModel.builder()
+                            .apiKey(apiKey)
+                            .modelName(aiModel)
+                            .build();
+                }
 
                 AiAgentService dynamicAgent = AiServices.builder(AiAgentService.class)
                         .chatLanguageModel(model)
