@@ -185,9 +185,12 @@ public class AgentMessageConsumer {
                             .build();
                 }
 
+                LeadQualificationTool qualTool = new LeadQualificationTool(payload.instance, remoteJid, configManagerClient, messageProducer);
+
                 AiAgentService dynamicAgent = AiServices.builder(AiAgentService.class)
                         .chatLanguageModel(model)
                         .chatMemoryProvider(chatMemoryProvider)
+                        .tools(qualTool)
                         .build();
 
                 String reply = dynamicAgent.chat(remoteJid, text, systemPrompt);

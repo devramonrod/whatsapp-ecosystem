@@ -19,6 +19,7 @@ public class TenantConfigResourceTest {
                 + "\"systemPrompt\": \"You are a bot\","
                 + "\"aiProvider\": \"OPENROUTER\","
                 + "\"aiModel\": \"anthropic/claude-3-haiku\","
+                + "\"notificationNumbers\": \"5521999999999\","
                 + "\"aiApiKey\": \"sk-or-test1234\""
                 + "}";
 
@@ -40,6 +41,8 @@ public class TenantConfigResourceTest {
           .then()
              .statusCode(200)
              .body("aiProvider", is("OPENROUTER"))
-             .body("aiModel", is("anthropic/claude-3-haiku"));
+             .body("aiModel", is("anthropic/claude-3-haiku"))
+             .body("notificationNumbers", is("5521999999999"));
     }
 }
+

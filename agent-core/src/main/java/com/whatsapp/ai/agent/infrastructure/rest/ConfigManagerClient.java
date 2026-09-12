@@ -17,6 +17,10 @@ public interface ConfigManagerClient {
     @Path("/../leads/{instanceName}/{remoteJid}")
     ChatLeadDTO getLeadStatus(@PathParam("instanceName") String instanceName, @PathParam("remoteJid") String remoteJid);
 
+    @jakarta.ws.rs.POST
+    @Path("/../leads/{instanceName}/{remoteJid}/toggle")
+    ChatLeadDTO toggleAiStatus(@PathParam("instanceName") String instanceName, @PathParam("remoteJid") String remoteJid, java.util.Map<String, Boolean> payload);
+
     class TenantConfigDTO {
         public Long id;
         public String phoneNumberId;
@@ -24,6 +28,7 @@ public interface ConfigManagerClient {
         public String systemPrompt;
         public String aiProvider;
         public String aiModel;
+        public String notificationNumbers;
         public String aiApiKey;
     }
 
