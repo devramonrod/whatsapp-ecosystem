@@ -6,7 +6,7 @@ quarkus:
       api-key: "${OPENAI_API_KEY:sk-fake}"
   rest-client:
     config-manager-api:
-      url: "http://localhost:8082"
+      url: "${CONFIG_MANAGER_URL:http://localhost:8082}"
 mp:
   messaging:
     incoming:
@@ -21,4 +21,3 @@ mp:
         topic: whatsapp.message.send
         value:
           serializer: org.apache.kafka.common.serialization.StringSerializer
-

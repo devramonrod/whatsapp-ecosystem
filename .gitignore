@@ -1,0 +1,65 @@
+# ==========================================
+# GITIGNORE - WHATSAPP ECOSYSTEM
+# ==========================================
+
+# Ambientes e Segredos
+.env
+.env.*
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+!.env.example
+*.pem
+*.key
+testes
+*/testes/
+
+# Java & Gradle
+.gradle/
+build/
+*/build/
+bin/
+*/bin/
+out/
+*/out/
+wrapper/dists/
+.gradletasknamecache
+
+# Node / Next.js
+node_modules/
+*/node_modules/
+.next/
+*/.next/
+.vercel
+*.tsbuildinfo
+next-env.d.ts
+
+# Logs e arquivos de depuração
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+.pnpm-debug.log*
+
+# Arquivos temporários e testes locais
+testes/
+output.json
+payload.json
+alter_columns.js
+script.js
+
+# IDEs e Editores
+.idea/
+.vscode/
+*.iml
+*.iws
+*.ipr
+.project
+.classpath
+.settings/
+
+# Sistema Operacional
+.DS_Store
+Thumbs.db
+

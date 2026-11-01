@@ -3,7 +3,7 @@ quarkus:
     port: 8081
   rest-client:
     evolution-api:
-      url: "http://localhost:8080"
+      url: "${EVOLUTION_API_URL:http://localhost:8080}"
 mp:
   messaging:
     outgoing:
@@ -20,7 +20,6 @@ mp:
           deserializer: org.apache.kafka.common.serialization.StringDeserializer
 evolution:
   api:
-    key: "B6D711FCDE4D4FD5936544120E713976"
+    key: "${EVOLUTION_API_KEY:}"
   instance:
-    name: "my-instance"
-
+    name: "${EVOLUTION_INSTANCE_NAME:my-instance}"

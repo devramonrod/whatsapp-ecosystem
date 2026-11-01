@@ -7,7 +7,7 @@ import java.nio.charset.StandardCharsets;
 import java.util.HexFormat;
 
 public class EncryptionUtil {
-    private static final String ENCRYPTION_KEY = "whatsapp-ai-ecosystem-secret-key-32";
+    private static final String ENCRYPTION_KEY = System.getenv().getOrDefault("ENCRYPTION_KEY", "whatsapp-ai-ecosystem-secret-key-32");
 
     public static String decrypt(String text) {
         if (text == null || !text.startsWith("enc:")) return text;

@@ -12,7 +12,7 @@ import java.util.HashMap;
 public class EvolutionMediaClient {
 
     private static final String EVOLUTION_URL = System.getenv().getOrDefault("EVOLUTION_API_URL", "http://evolution-api:8080");
-    private static final String EVOLUTION_API_KEY = System.getenv().getOrDefault("EVOLUTION_API_KEY", "B6D711FCDE4D4FD5936544120E713976");
+    private static final String EVOLUTION_API_KEY = System.getenv().getOrDefault("EVOLUTION_API_KEY", "");
     private static final HttpClient httpClient = HttpClient.newBuilder().build();
     private static final ObjectMapper mapper = new ObjectMapper();
 

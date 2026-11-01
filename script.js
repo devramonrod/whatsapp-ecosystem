@@ -1,14 +1,25 @@
+require('dotenv').config();
+
 async function run() {
-  const res = await fetch('http://localhost:8080/webhook/set/ELOISA', {
+  const evolutionUrl = process.env.EVOLUTION_SERVER_URL || 'http://localhost:8080';
+  const apiKey = process.env.EVOLUTION_API_KEY;
+  const webhookUrl = process.env.WHATSAPP_GATEWAY_URL ? `${process.env.WHATSAPP_GATEWAY_URL}/webhook/evolution` : 'http://whatsapp-gateway:8081/webhook/evolution';
+
+  if (!apiKey) {
+    console.error("EVOLUTION_API_KEY not set in environment");
+    process.exit(1);
+  }
+
+  const res = await fetch(`${evolutionUrl}/webhook/set/ELOISA`, {
     method: 'POST',
     headers: {
-      'apikey': 'B6D711FCDE4D4FD5936544120E713976',
+      'apikey': apiKey,
       'Content-Type': 'application/json'
     },
     body: JSON.stringify({
       webhook: {
         enabled: true,
-        url: 'http://whatsapp-gateway:8081/webhook/evolution',
+        url: webhookUrl,
         byEvents: false,
         base64: true,
         events: ['MESSAGES_UPSERT']
